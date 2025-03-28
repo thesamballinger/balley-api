@@ -1,0 +1,4 @@
+2025-03-28 15:34:26,826 - app.main - INFO - Application starting with environment variables:
+2025-03-28 15:34:26,827 - app.main - INFO - OPENAI_API_KEY set: Yes
+2025-03-28 15:34:31,366 - app.main - INFO - Application starting with environment variables:
+2025-03-28 15:34:31,366 - app.main - INFO - OPENAI_API_KEY set: Yes
