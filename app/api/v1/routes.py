@@ -8,15 +8,15 @@ from app.core.logging import DetailedLoggingCallbackHandler, logger
 import uuid
 import traceback
 
-router = APIRouter()
+router = APIRouter(prefix="/llm", tags=["llm"])
 
 @router.post("/query", response_model=QueryResponse)
 async def process_query(request: QueryRequest):
     """
     Process a natural language query using the AI agent.
     
-    The agent will intelligently choose between API calls, database queries,
-    or direct LLM responses based on the query.
+    The agent will intelligently choose between direct LLM responses
+    or using tools based on the query.
     """
     try:
         # Generate a session ID if not provided
@@ -37,24 +37,11 @@ async def process_query(request: QueryRequest):
         # Create agent with memory for this session
         agent = create_agent(session_id)
         
-        # Add user context to the query if available
-        user_id = get_user_context(session_id, "user_id")
-        enhanced_query = request.query
-        if user_id and "what's my user id" in request.query.lower():
-            enhanced_query = f"The user is asking about their user ID, which is {user_id}. The original query was: {request.query}"
-        
         # Run the agent with the query and callbacks
         response = agent.invoke(
-            {"input": enhanced_query},
+            {"input": request.query},
             callbacks=[callback_handler]
         )
-        
-        # Log the intermediate steps if available
-        if "intermediate_steps" in response:
-            for i, step in enumerate(response["intermediate_steps"]):
-                action, output = step
-                logger.info(f"[{session_id}] Step {i+1}: {action.tool} - {action.tool_input}")
-                logger.info(f"[{session_id}] Output: {output}")
         
         # Log the final response
         logger.info(f"[{session_id}] Final response: {response['output']}")

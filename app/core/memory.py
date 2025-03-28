@@ -18,18 +18,16 @@ def get_memory_for_session(session_id: str):
         )
     return session_memories[session_id]
 
-def store_user_context(session_id: str, key: str, value: Any):
-    """Store additional context for a user session"""
+def set_user_context(session_id: str, key: str, value: Any):
+    """Store context information for a user session"""
     if session_id not in user_context:
         user_context[session_id] = {}
-    
     user_context[session_id][key] = value
-    
-def get_user_context(session_id: str, key: str, default=None):
-    """Retrieve user context value"""
+
+def get_user_context(session_id: str, key: str, default=None) -> Any:
+    """Retrieve context information for a user session"""
     if session_id not in user_context:
         return default
-    
     return user_context[session_id].get(key, default)
 
 def extract_user_id_from_query(query: str) -> Optional[int]:
@@ -50,13 +48,7 @@ def extract_user_id_from_query(query: str) -> Optional[int]:
     
     return None
 
-def process_initial_message(session_id: str, query: str):
-    """Process the initial message to extract and store user context"""
-    # Extract user ID if present
-    user_id = extract_user_id_from_query(query)
-    if user_id:
-        store_user_context(session_id, "user_id", user_id)
-        
-    # Add the message to memory
-    memory = get_memory_for_session(session_id)
-    memory.chat_memory.add_user_message(query)
+def process_initial_message(session_id: str, message: str):
+    """Process an initial message to extract context information"""
+    # This is a placeholder for any preprocessing you might want to do
+    pass

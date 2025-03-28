@@ -1,16 +1,23 @@
 from langchain_openai import OpenAI, ChatOpenAI
 from langchain.agents import AgentExecutor, create_openai_tools_agent
 from langchain.prompts import ChatPromptTemplate, MessagesPlaceholder
-from app.config import OPENAI_API_KEY
+from app.config import get_settings
 from app.core.tools import get_all_tools
+
+settings = get_settings()
 
 def create_llm():
     """Return a basic OpenAI LLM instance without tools"""
-    return OpenAI(api_key=OPENAI_API_KEY, model="gpt-4o-2024-08-06")
+    return OpenAI(api_key=settings.openai_api_key, model=settings.default_model)
 
 def create_chat_llm():
-    """Return a ChatOpenAI instance for use with tools and agents"""
-    return ChatOpenAI(api_key=OPENAI_API_KEY, model="gpt-4o-2024-08-06")
+    """Return a ChatOpenAI instance for use with agents"""
+    return ChatOpenAI(
+        api_key=settings.openai_api_key,
+        model=settings.default_model,
+        temperature=0.2,
+        streaming=True
+    )
 
 def get_llm_with_tools():
     """Return an LLM with tools for API interaction"""
@@ -22,8 +29,9 @@ def get_llm_with_tools():
     
     # Create a prompt template with agent_scratchpad
     prompt = ChatPromptTemplate.from_messages([
-        ("system", """You are an AI assistant for a property management application called Dwelio. 
-        You have access to various API endpoints to help users manage properties, tenants, payments, and more.
+        ("system", """You are an AI assistant for a payroll management application.
+        You have access to various API endpoints to help users manage employees, 
+        earning rates, and other payroll-related tasks.
         Use the available tools to respond to user queries accurately and efficiently.
         Always provide helpful and concise responses."""),
         ("user", "{input}"),
@@ -39,16 +47,9 @@ def get_llm_with_tools():
     return agent_executor
 
 def process_question(question: str):
-    """Process a question using the appropriate LLM setup"""
-    # For simple questions, use the basic LLM
-    if len(question.split()) < 10 or not any(keyword in question.lower() for keyword in 
-                                           ["api", "data", "user", "tenant", "landlord", "payment"]):
-        llm = create_llm()
-        return llm.invoke(question)
-    
-    # For complex questions that might require API calls, use the agent with tools
-    agent_executor = get_llm_with_tools()
-    return agent_executor.invoke({"input": question})["output"]
+    """Process a question using the LLM"""
+    llm = create_llm()
+    return llm.invoke(question)
 
 # For backward compatibility
 def get_llm(question: str = None):
